@@ -207,5 +207,10 @@ def view_dataset(request):
     dataset_path = os.path.join(settings.MEDIA_ROOT, 'wind_power_dataset_50000.csv')  # Ensure file is there
     df = pd.read_csv(dataset_path)
     df = df.head(500)  # Limit to first 500 rows
+    
+    # Forcefully change 2024 to 2025 in the Timestamp column
+    if 'Timestamp' in df.columns:
+        df['Timestamp'] = df['Timestamp'].astype(str).str.replace('2024', '2025')
+        
     table_html = df.to_html(classes='table table-striped table-bordered', index=False, border=0)
     return render(request, 'users/viewdataset.html', {'table': table_html})
