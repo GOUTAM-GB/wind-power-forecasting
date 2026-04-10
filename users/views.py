@@ -110,6 +110,7 @@ def logout_view(request):
 import os
 import io
 import base64
+import json
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -130,120 +131,28 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 def train_view(request):
     try:
-        # Set paths
-        dataset_path = os.path.join(BASE_DIR, 'media', 'wind_power_dataset_50000.csv')
         models_dir = os.path.join(BASE_DIR, 'models')
-        os.makedirs(models_dir, exist_ok=True)
-
-        # Load dataset
-        df = pd.read_csv(dataset_path)
-        print(f"Dataset loaded successfully with {len(df)} rows")
-
-        # Drop datetime or non-numeric columns if any
-        if 'Timestamp' in df.columns:
-            df = df.drop(columns=['Timestamp'])
-
-        # Ensure only numeric columns are used
-        numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
-        if "Active_Wind_Power_kW" not in numeric_cols:
-            raise ValueError("Target column 'Active_Wind_Power_kW' not found in numeric columns.")
-
-        X = df.drop(columns=['Active_Wind_Power_kW'])
-        y = df['Active_Wind_Power_kW']
-
-        # Split dataset
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-        # Feature scaling
-        scaler = StandardScaler()
-        X_train_scaled = scaler.fit_transform(X_train)
-        X_test_scaled = scaler.transform(X_test)
-
-        # Initialize models for comparison
-        models = {
-            'Linear Regression': LinearRegression(),
-            'Lasso Regression': Lasso(),
-            'SVR (Support Vector)': SVR(),
-            'KNN Regressor': KNeighborsRegressor(n_neighbors=5)
-        }
-
-        comparison_results = []
-        best_model_name = ""
-        best_model = None
-        best_r2 = -float('inf')
-        best_metrics = {}
-
-        # Train and compare models
-        print("Training models for comparison...")
-        for name, m in models.items():
-            m.fit(X_train_scaled, y_train)
-            y_pred = m.predict(X_test_scaled)
+        
+        # Load pre-computed metrics
+        metrics_path = os.path.join(models_dir, 'metrics.json')
+        if not os.path.exists(metrics_path):
+            return render(request, 'users/training.html', {'error': 'Training data not found. Please run pre-training script.'})
             
-            r2 = r2_score(y_test, y_pred)
-            mse = mean_squared_error(y_test, y_pred)
-            rmse = np.sqrt(mse)
-            mae = mean_absolute_error(y_test, y_pred)
+        with open(metrics_path, 'r') as f:
+            context = json.load(f)
             
-            comparison_results.append({
-                'model_name': name,
-                'accuracy_r2': round(r2, 4),
-                'mae': round(mae, 2),
-                'rmse': round(rmse, 2)
-            })
-            
-            # Select best model based on R2 Score
-            if r2 > best_r2:
-                best_r2 = r2
-                best_model = m
-                best_model_name = name
-                best_metrics = {'mae': mae, 'mse': mse, 'rmse': rmse, 'r2': r2}
-
-        # Print comparison nicely to terminal
-        print("\n--- MODEL COMPARISON RESULTS ---")
-        for res in comparison_results:
-            print(f"Model: {res['model_name']} | Accuracy (R2): {res['accuracy_r2']} | RMSE: {res['rmse']}")
-        print(f"=================================")
-        print(f"Best Model Selected: {best_model_name} with Accuracy {round(best_r2, 4)}\n")
-
-        # Save best model, scaler, and the model name
-        joblib.dump(best_model, os.path.join(models_dir, 'model.pkl'))
-        joblib.dump(scaler, os.path.join(models_dir, 'scaler.pkl'))
-        with open(os.path.join(models_dir, 'model_name.txt'), 'w') as f:
-            f.write(best_model_name)
-
-        # Generate correlation matrix image
-        correlation_plot = None
-        try:
-            corr = df.corr()
-            plt.figure(figsize=(10, 8))
-            sns.heatmap(corr, annot=True, fmt=".2f", cmap="coolwarm", square=True)
-            plt.title("Correlation Matrix")
-
-            buf = io.BytesIO()
-            plt.savefig(buf, format='png')
-            buf.seek(0)
-            image_base64 = base64.b64encode(buf.read()).decode('utf-8')
-            buf.close()
-            plt.close()
-            correlation_plot = image_base64
-        except Exception as e:
-            correlation_plot = None
-
-        # Context for template (we pass the best metrics)
-        context = {
-            'best_model_name': best_model_name,
-            'mae': f"{best_metrics['mae']:.2f}",
-            'mse': f"{best_metrics['mse']:.2f}",
-            'rmse': f"{best_metrics['rmse']:.2f}",
-            'r2': f"{best_metrics['r2']:.4f}",
-            'comparison_results': comparison_results,
-            'correlation_plot': correlation_plot
-        }
+        # Load pre-computed correlation plot (base64)
+        plot_path = os.path.join(models_dir, 'correlation_plot.txt')
+        if os.path.exists(plot_path):
+            with open(plot_path, 'r') as f:
+                context['correlation_plot'] = f.read()
+        else:
+            context['correlation_plot'] = None
 
         return render(request, 'users/training.html', context)
 
     except Exception as e:
-        error_msg = f"Error during model training: {str(e)}"
+        error_msg = f"Error loading model training data: {str(e)}"
         print(error_msg)
         return render(request, 'users/training.html', {'error': error_msg})
 
