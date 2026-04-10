@@ -1,0 +1,582 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block contents %}
+
+<!-- ═══════════════════════════════════════════
+     HERO SECTION
+═══════════════════════════════════════════ -->
+<section class="hero-section">
+    <div class="hero-inner">
+        <div class="hero-label section-label">// ML-Powered Energy Intelligence</div>
+        <h1 class="hero-title">
+            Active Wind Power<br>
+            <span class="hero-title-accent">Forecasting</span>
+        </h1>
+        <p class="hero-subtitle">
+            Harnessing K-Nearest Neighbours regression on 50,000 sensor records to deliver
+            accurate real-time wind energy predictions — enabling smarter grid management
+            and sustainable energy decisions.
+        </p>
+        <div class="hero-actions">
+            <a href="{% url 'UserRegisterForm' %}" class="btn-wind btn-primary-wind">Get Started</a>
+            <a href="{% url 'UserLogin' %}" class="btn-wind btn-outline-wind">Sign In</a>
+        </div>
+    </div>
+
+    <!-- Animated turbine graphic -->
+    <div class="hero-turbine" aria-hidden="true">
+        <svg class="turbine-svg" viewBox="0 0 220 340" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Tower -->
+            <polygon points="104,170 116,170 110,330" fill="#163a6e" opacity="0.9"/>
+            <!-- Base -->
+            <rect x="84" y="326" width="52" height="10" rx="5" fill="#0e2040"/>
+            <!-- Rotating group (nacelle hub + blades) -->
+            <g class="turbine-spin" style="transform-origin:110px 170px">
+                <!-- Hub -->
+                <circle cx="110" cy="170" r="10" fill="#00c8d4"/>
+                <!-- Blade 1 (up) -->
+                <path d="M110,160 C108,140 103,112 110,92 C117,112 112,140 110,160Z" fill="#c8ddf0" opacity="0.92"/>
+                <!-- Blade 2 (lower-right) -->
+                <path d="M118,175 C136,168 162,168 170,178 C158,188 134,182 118,175Z" fill="#c8ddf0" opacity="0.80"/>
+                <!-- Blade 3 (lower-left) -->
+                <path d="M102,175 C84,168 58,168 50,178 C62,188 86,182 102,175Z" fill="#c8ddf0" opacity="0.68"/>
+            </g>
+            <!-- Glow ring -->
+            <circle cx="110" cy="170" r="18" fill="none" stroke="#00c8d4" stroke-width="1" opacity="0.25"/>
+            <!-- Ground line -->
+            <line x1="60" y1="336" x2="160" y2="336" stroke="#00c8d4" stroke-width="1" opacity="0.3"/>
+        </svg>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     STATS BAR
+═══════════════════════════════════════════ -->
+<div class="stats-bar">
+    <div class="stat-item">
+        <span class="stat-num">50,000</span>
+        <span class="stat-label">Training Records</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+        <span class="stat-num">6</span>
+        <span class="stat-label">Input Features</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+        <span class="stat-num">KNN</span>
+        <span class="stat-label">ML Algorithm</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+        <span class="stat-num">R²</span>
+        <span class="stat-label">Accuracy Metric</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+        <span class="stat-num">kW</span>
+        <span class="stat-label">Power Output</span>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     HOW IT WORKS
+═══════════════════════════════════════════ -->
+<section class="section-block">
+    <div class="section-label mb-2">// System Pipeline</div>
+    <h2 class="section-heading">How the Forecasting Works</h2>
+    <div class="divider"></div>
+
+    <div class="pipeline-grid">
+        <div class="pipeline-step">
+            <div class="step-num">01</div>
+            <div class="step-icon">
+                <svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="18" stroke="#00c8d4" stroke-width="1.5"/><path d="M12 28 C12 18 28 18 28 10" stroke="#00c8d4" stroke-width="1.5" stroke-linecap="round"/><circle cx="20" cy="20" r="3" fill="#00c8d4"/></svg>
+            </div>
+            <h4>Sensor Data Collection</h4>
+            <p>Wind speed, direction, temperature, rotor speed, and atmospheric pressure are captured at 10-minute intervals from turbine sensors.</p>
+        </div>
+        <div class="pipeline-arrow">→</div>
+        <div class="pipeline-step">
+            <div class="step-num">02</div>
+            <div class="step-icon">
+                <svg viewBox="0 0 40 40" fill="none"><rect x="6" y="6" width="28" height="28" rx="3" stroke="#00c8d4" stroke-width="1.5"/><line x1="13" y1="20" x2="27" y2="20" stroke="#00c8d4" stroke-width="1.5"/><line x1="20" y1="13" x2="20" y2="27" stroke="#00c8d4" stroke-width="1.5"/></svg>
+            </div>
+            <h4>Feature Scaling</h4>
+            <p>StandardScaler normalises all input features to zero mean and unit variance, ensuring equal contribution to distance calculations in the KNN model.</p>
+        </div>
+        <div class="pipeline-arrow">→</div>
+        <div class="pipeline-step">
+            <div class="step-num">03</div>
+            <div class="step-icon">
+                <svg viewBox="0 0 40 40" fill="none"><circle cx="14" cy="14" r="4" stroke="#f0c040" stroke-width="1.5"/><circle cx="26" cy="20" r="4" stroke="#f0c040" stroke-width="1.5"/><circle cx="14" cy="28" r="4" stroke="#f0c040" stroke-width="1.5"/><line x1="18" y1="14" x2="22" y2="18" stroke="#00c8d4" stroke-width="1" opacity="0.6"/><line x1="22" y1="22" x2="18" y2="26" stroke="#00c8d4" stroke-width="1" opacity="0.6"/></svg>
+            </div>
+            <h4>KNN Regression (k=5)</h4>
+            <p>The K-Nearest Neighbours model identifies the 5 most similar historical observations and averages their power outputs to generate a precise forecast.</p>
+        </div>
+        <div class="pipeline-arrow">→</div>
+        <div class="pipeline-step">
+            <div class="step-num">04</div>
+            <div class="step-icon">
+                <svg viewBox="0 0 40 40" fill="none"><polyline points="6,30 14,18 22,24 30,10 34,14" stroke="#00c8d4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><line x1="6" y1="34" x2="34" y2="34" stroke="#163a6e" stroke-width="1.5"/></svg>
+            </div>
+            <h4>Power Output Prediction</h4>
+            <p>The model outputs Active Wind Power in kilowatts (kW) instantly, with evaluation metrics MAE, RMSE, and R² confirming model reliability.</p>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     DATASET FEATURES
+═══════════════════════════════════════════ -->
+<section class="section-block">
+    <div class="section-label mb-2">// Dataset Overview</div>
+    <h2 class="section-heading">Input Features &amp; Target Variable</h2>
+    <div class="divider"></div>
+
+    <div class="features-grid">
+        <div class="feature-card">
+            <div class="feature-icon wind-icon">
+                <svg viewBox="0 0 32 32" fill="none"><path d="M4 16 Q10 10 16 16 Q22 22 28 16" stroke="#00c8d4" stroke-width="2" stroke-linecap="round"/><path d="M4 22 Q10 16 16 22 Q22 28 28 22" stroke="#00c8d4" stroke-width="1.4" stroke-linecap="round" opacity="0.5"/></svg>
+            </div>
+            <div class="feature-info">
+                <div class="feature-name">Wind Speed</div>
+                <div class="feature-unit">m/s</div>
+                <p>Primary driver of power generation. Ranges from calm to storm-force conditions.</p>
+            </div>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon dir-icon">
+                <svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="12" stroke="#00c8d4" stroke-width="1.5"/><polygon points="16,6 19,20 16,17 13,20" fill="#f0c040"/></svg>
+            </div>
+            <div class="feature-info">
+                <div class="feature-name">Wind Direction</div>
+                <div class="feature-unit">degrees (0°–360°)</div>
+                <p>Affects turbine yaw alignment and effective swept area efficiency.</p>
+            </div>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon temp-icon">
+                <svg viewBox="0 0 32 32" fill="none"><rect x="13" y="5" width="6" height="16" rx="3" stroke="#00c8d4" stroke-width="1.5"/><circle cx="16" cy="24" r="4" stroke="#00c8d4" stroke-width="1.5" fill="rgba(0,200,212,0.15)"/><line x1="19" y1="11" x2="22" y2="11" stroke="#00c8d4" stroke-width="1" opacity="0.6"/><line x1="19" y1="15" x2="22" y2="15" stroke="#00c8d4" stroke-width="1" opacity="0.6"/></svg>
+            </div>
+            <div class="feature-info">
+                <div class="feature-name">Temperature</div>
+                <div class="feature-unit">°C</div>
+                <p>Influences air density, which directly impacts aerodynamic power extraction.</p>
+            </div>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon rotor-icon">
+                <svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="3" fill="#00c8d4"/><path d="M16,13 C15,9 13,5 16,3 C19,5 17,9 16,13Z" fill="#c8ddf0" opacity="0.8"/><path d="M18.6,17.5 C22,19 26,19 26.5,16 C25,13.5 21,15 18.6,17.5Z" fill="#c8ddf0" opacity="0.7"/><path d="M13.4,17.5 C10,19 6,19 5.5,16 C7,13.5 11,15 13.4,17.5Z" fill="#c8ddf0" opacity="0.6"/></svg>
+            </div>
+            <div class="feature-info">
+                <div class="feature-name">Rotor Speed</div>
+                <div class="feature-unit">RPM</div>
+                <p>Angular velocity of the turbine blades — a key mechanical efficiency indicator.</p>
+            </div>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon pres-icon">
+                <svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="11" stroke="#00c8d4" stroke-width="1.5"/><path d="M16 10 L16 16 L21 16" stroke="#f0c040" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="feature-info">
+                <div class="feature-name">Atmospheric Pressure</div>
+                <div class="feature-unit">hPa</div>
+                <p>Barometric pressure determines air mass density and power curve adjustments.</p>
+            </div>
+        </div>
+        <div class="feature-card feature-card--target">
+            <div class="feature-icon target-icon">
+                <svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="11" stroke="#f0c040" stroke-width="1.5"/><circle cx="16" cy="16" r="6" stroke="#f0c040" stroke-width="1.2"/><circle cx="16" cy="16" r="2" fill="#f0c040"/></svg>
+            </div>
+            <div class="feature-info">
+                <div class="feature-name">Active Wind Power <span style="color:var(--gold);font-size:0.7rem;margin-left:4px;">TARGET</span></div>
+                <div class="feature-unit" style="color:var(--gold);">kW</div>
+                <p>The predicted output variable — instantaneous electrical power generated by the wind turbine.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     WHY THIS MATTERS
+═══════════════════════════════════════════ -->
+<section class="section-block">
+    <div class="why-grid">
+        <div class="why-content">
+            <div class="section-label mb-2">// Motivation</div>
+            <h2 class="section-heading">Why Accurate Forecasting Matters</h2>
+            <div class="divider"></div>
+            <p>Wind energy is inherently variable — gusts, pressure fronts, and temperature shifts can cause power output to fluctuate by hundreds of kilowatts within minutes. Without accurate forecasting, grid operators must maintain expensive spinning reserves.</p>
+            <p>Our ML-based system uses historical patterns from <strong style="color:var(--white)">50,000 data points</strong> spanning a full year of turbine operation to deliver predictions that reduce uncertainty and enable proactive grid balancing.</p>
+            <p>By accurately predicting <span class="text-teal">active power output</span> before it is generated, energy stakeholders can optimise dispatch schedules, reduce curtailment, and maximise renewable penetration.</p>
+        </div>
+        <div class="why-metrics">
+            <div class="metric-card">
+                <div class="metric-icon">⚡</div>
+                <div class="metric-title">Reduced Reserve Costs</div>
+                <div class="metric-desc">Accurate forecasts lower the need for costly standby spinning reserves in the grid.</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-icon">📊</div>
+                <div class="metric-title">Data-Driven Insights</div>
+                <div class="metric-desc">Correlation analysis reveals which sensor parameters most influence power output.</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-icon">🌱</div>
+                <div class="metric-title">Greener Dispatch</div>
+                <div class="metric-desc">Better wind predictions help displace fossil peaker plants with clean wind energy.</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-icon">🔧</div>
+                <div class="metric-title">Predictive Maintenance</div>
+                <div class="metric-desc">Anomalies between forecast and actual output can signal turbine underperformance early.</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     CTA
+═══════════════════════════════════════════ -->
+<section class="cta-section">
+    <div class="cta-inner">
+        <div class="section-label mb-2">// Ready to Begin?</div>
+        <h2 style="font-size:2.2rem;margin-bottom:0.8rem;">Start Forecasting Wind Power <span class="text-teal">Today</span></h2>
+        <p style="max-width:520px;margin:0 auto 2rem;font-size:1rem;">Create an account to access the full forecasting dashboard — train the model, explore the dataset, and generate instant power predictions.</p>
+        <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+            <a href="{% url 'UserRegisterForm' %}" class="btn-wind btn-primary-wind">Create Free Account</a>
+            <a href="{% url 'AdminLogin' %}" class="btn-wind btn-gold-wind">Admin Portal</a>
+        </div>
+    </div>
+</section>
+
+
+<!-- ─── PAGE STYLES ─── -->
+<style>
+
+/* HERO */
+.hero-section {
+    max-width: 1100px;
+    margin: 0 auto 0;
+    padding: 3rem 1.5rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+    min-height: 60vh;
+}
+
+.hero-inner { flex: 1; max-width: 620px; }
+
+.hero-label {
+    margin-bottom: 0.8rem;
+    font-size: 0.78rem;
+}
+
+.hero-title {
+    font-family: var(--font-head);
+    font-size: clamp(2.6rem, 6vw, 4.2rem);
+    font-weight: 700;
+    line-height: 1.08;
+    letter-spacing: 0.02em;
+    color: var(--white);
+    margin-bottom: 1.2rem;
+}
+
+.hero-title-accent {
+    color: var(--teal);
+    position: relative;
+    display: inline-block;
+}
+
+.hero-title-accent::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; bottom: -4px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--teal), transparent);
+}
+
+.hero-subtitle {
+    font-size: 1.05rem;
+    color: var(--muted);
+    line-height: 1.75;
+    max-width: 560px;
+    margin-bottom: 2rem;
+}
+
+.hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; }
+
+/* Turbine */
+.hero-turbine {
+    flex-shrink: 0;
+    width: 200px;
+    opacity: 0.85;
+    filter: drop-shadow(0 0 28px rgba(0,200,212,0.25));
+}
+
+.turbine-svg { width: 100%; }
+
+.turbine-spin {
+    animation: spin-turbine 8s linear infinite;
+    transform-box: fill-box;
+}
+
+@keyframes spin-turbine {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
+/* STATS BAR */
+.stats-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0;
+    max-width: 1100px;
+    margin: 0 auto 3rem;
+    background: rgba(14,32,64,0.7);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    backdrop-filter: blur(10px);
+    padding: 0.2rem 0;
+}
+
+.stat-item {
+    flex: 1;
+    min-width: 100px;
+    text-align: center;
+    padding: 1rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.stat-num {
+    font-family: var(--font-head);
+    font-size: 1.7rem;
+    font-weight: 700;
+    color: var(--teal);
+    letter-spacing: 0.04em;
+    line-height: 1;
+}
+
+.stat-label {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.stat-divider {
+    width: 1px;
+    height: 40px;
+    background: var(--border);
+    flex-shrink: 0;
+}
+
+/* SECTIONS */
+.section-block {
+    max-width: 1100px;
+    margin: 0 auto 3.5rem;
+    padding: 0 1.5rem;
+}
+
+.section-heading {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 0.5rem;
+}
+
+/* PIPELINE */
+.pipeline-grid {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 1.5rem;
+}
+
+.pipeline-step {
+    flex: 1;
+    min-width: 180px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1.4rem 1.2rem;
+    position: relative;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.pipeline-step:hover {
+    border-color: var(--teal);
+    box-shadow: 0 0 20px rgba(0,200,212,0.12);
+}
+
+.step-num {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--teal-dim);
+    letter-spacing: 0.1em;
+    margin-bottom: 0.8rem;
+}
+
+.step-icon { width: 40px; height: 40px; margin-bottom: 0.8rem; }
+
+.pipeline-step h4 {
+    font-family: var(--font-head);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--white);
+    margin-bottom: 0.5rem;
+}
+
+.pipeline-step p { font-size: 0.85rem; margin: 0; }
+
+.pipeline-arrow {
+    color: var(--teal-dim);
+    font-size: 1.4rem;
+    align-self: center;
+    padding: 0 4px;
+    flex-shrink: 0;
+}
+
+/* FEATURES */
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.feature-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1.2rem;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    transition: border-color 0.2s;
+}
+
+.feature-card:hover { border-color: var(--teal-dim); }
+
+.feature-card--target {
+    border-color: rgba(240,192,64,0.3);
+}
+
+.feature-card--target:hover { border-color: var(--gold); }
+
+.feature-icon { width: 36px; height: 36px; flex-shrink: 0; margin-top: 2px; }
+
+.feature-name {
+    font-family: var(--font-head);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--white);
+    margin-bottom: 2px;
+}
+
+.feature-unit {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--teal);
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+}
+
+.feature-info p { font-size: 0.84rem; margin: 0; }
+
+/* WHY SECTION */
+.why-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    align-items: start;
+}
+
+.why-metrics {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.metric-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1.2rem 1rem;
+    text-align: center;
+    transition: border-color 0.2s, transform 0.2s;
+}
+
+.metric-card:hover {
+    border-color: var(--teal-dim);
+    transform: translateY(-2px);
+}
+
+.metric-icon { font-size: 1.6rem; margin-bottom: 0.5rem; }
+
+.metric-title {
+    font-family: var(--font-head);
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--white);
+    margin-bottom: 0.4rem;
+}
+
+.metric-desc { font-size: 0.78rem; color: var(--muted); margin: 0; line-height: 1.6; }
+
+/* CTA */
+.cta-section {
+    max-width: 1100px;
+    margin: 0 auto 3rem;
+    padding: 0 1.5rem;
+}
+
+.cta-inner {
+    background: linear-gradient(135deg, rgba(0,80,100,0.45), rgba(14,32,64,0.85));
+    border: 1px solid rgba(0,200,212,0.3);
+    border-radius: 6px;
+    text-align: center;
+    padding: 3rem 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.cta-inner::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,200,212,0.1), transparent 70%);
+    pointer-events: none;
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+    .hero-section { flex-direction: column; text-align: center; min-height: auto; padding-top: 2rem; }
+    .hero-actions { justify-content: center; }
+    .hero-turbine { width: 140px; }
+    .why-grid { grid-template-columns: 1fr; gap: 2rem; }
+    .pipeline-arrow { transform: rotate(90deg); align-self: center; margin: -0.2rem auto; }
+    .pipeline-grid { flex-direction: column; }
+    .pipeline-step { min-width: auto; }
+}
+
+@media (max-width: 600px) {
+    .stats-bar { flex-direction: column; gap: 0; }
+    .stat-divider { width: 80%; height: 1px; }
+    .why-metrics { grid-template-columns: 1fr; }
+    .hero-title { font-size: 2.2rem; }
+}
+</style>
+
+{% endblock %}

@@ -1,0 +1,483 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WindML — Active Wind Power Forecasting</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Exo+2:wght@300;400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sky: #0a1628;
+            --sky-mid: #0e2040;
+            --sky-light: #163a6e;
+            --teal: #00c8d4;
+            --teal-dim: #007a82;
+            --teal-glow: rgba(0,200,212,0.18);
+            --gold: #f0c040;
+            --gold-dim: #b89020;
+            --white: #e8f4fc;
+            --muted: #7ea8cc;
+            --blade: #c8ddf0;
+            --card-bg: rgba(14,32,64,0.82);
+            --border: rgba(0,200,212,0.22);
+            --navbar-h: 68px;
+            --radius: 4px;
+            --font-head: 'Rajdhani', sans-serif;
+            --font-body: 'Exo 2', sans-serif;
+            --font-mono: 'Share Tech Mono', monospace;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: var(--font-body);
+            background-color: var(--sky);
+            color: var(--white);
+            min-height: 100vh;
+            overflow-x: hidden;
+            padding-top: var(--navbar-h);
+        }
+
+        /* ─── BACKGROUND ─── */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("{% static 'pexels-kervin-3976320.jpg' %}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            filter: brightness(0.28) saturate(0.7);
+            z-index: -2;
+        }
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 80% 50% at 50% 0%, rgba(0,160,180,0.18) 0%, transparent 70%),
+                linear-gradient(180deg, rgba(10,22,40,0.55) 0%, rgba(10,22,40,0.85) 100%);
+            z-index: -1;
+        }
+
+        /* ─── NAVBAR ─── */
+        .navbar {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: var(--navbar-h);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            padding: 0 2rem;
+            background: rgba(8,16,34,0.92);
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            flex-shrink: 0;
+        }
+
+        .nav-brand-icon {
+            width: 36px; height: 36px;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .nav-brand-icon svg { width: 100%; height: 100%; }
+
+        .nav-brand-text {
+            font-family: var(--font-head);
+            font-size: 1.45rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            color: var(--white);
+            line-height: 1;
+        }
+
+        .nav-brand-text span {
+            color: var(--teal);
+        }
+
+        .nav-brand-sub {
+            font-family: var(--font-mono);
+            font-size: 0.55rem;
+            color: var(--muted);
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            display: block;
+            margin-top: 2px;
+        }
+
+        .nav-spacer { flex: 1; }
+
+        /* Hamburger */
+        .nav-toggle {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+            padding: 8px;
+            background: none;
+            border: none;
+        }
+        .nav-toggle span {
+            display: block;
+            width: 24px; height: 2px;
+            background: var(--teal);
+            border-radius: 2px;
+            transition: all 0.3s;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            font-family: var(--font-head);
+            font-size: 0.95rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            color: var(--muted);
+            text-decoration: none;
+            padding: 6px 14px;
+            border-radius: var(--radius);
+            transition: color 0.2s, background 0.2s;
+            text-transform: uppercase;
+            position: relative;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 2px; left: 14px; right: 14px;
+            height: 1px;
+            background: var(--teal);
+            transform: scaleX(0);
+            transition: transform 0.2s;
+        }
+
+        .nav-links a:hover { color: var(--teal); }
+        .nav-links a:hover::after { transform: scaleX(1); }
+
+        .nav-links .btn-nav {
+            background: transparent;
+            border: 1px solid var(--teal-dim);
+            color: var(--teal);
+            padding: 6px 18px;
+            border-radius: 2px;
+            transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+        }
+        .nav-links .btn-nav:hover {
+            background: var(--teal);
+            color: var(--sky);
+            box-shadow: 0 0 18px rgba(0,200,212,0.4);
+        }
+        .nav-links .btn-nav::after { display: none; }
+
+        /* ─── MAIN CONTENT ─── */
+        .main-content {
+            min-height: calc(100vh - var(--navbar-h));
+            padding: 2rem 1rem;
+        }
+
+        /* ─── CONTENT CARD (for inner pages) ─── */
+        .page-card {
+            max-width: 980px;
+            margin: 2.5rem auto;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 2.5rem 2.5rem;
+            backdrop-filter: blur(14px);
+            box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,200,212,0.06);
+        }
+
+        /* ─── HEADINGS ─── */
+        h1, h2, h3, h4, h5 {
+            font-family: var(--font-head);
+            letter-spacing: 0.04em;
+            line-height: 1.2;
+        }
+
+        h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--white);
+            margin-bottom: 1rem;
+        }
+
+        p {
+            font-family: var(--font-body);
+            font-size: 0.97rem;
+            line-height: 1.75;
+            color: var(--muted);
+            margin-bottom: 0.9rem;
+        }
+
+        /* ─── BUTTONS ─── */
+        .btn-wind {
+            display: inline-block;
+            font-family: var(--font-head);
+            font-weight: 600;
+            font-size: 0.95rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            padding: 10px 28px;
+            border-radius: 2px;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            transition: all 0.25s;
+        }
+
+        .btn-primary-wind {
+            background: var(--teal);
+            color: var(--sky);
+            box-shadow: 0 0 20px rgba(0,200,212,0.3);
+        }
+        .btn-primary-wind:hover {
+            background: #00e8f8;
+            box-shadow: 0 0 32px rgba(0,200,212,0.55);
+            color: var(--sky);
+            transform: translateY(-1px);
+        }
+
+        .btn-outline-wind {
+            background: transparent;
+            color: var(--teal);
+            border: 1px solid var(--teal);
+        }
+        .btn-outline-wind:hover {
+            background: rgba(0,200,212,0.12);
+            box-shadow: 0 0 20px rgba(0,200,212,0.25);
+            color: var(--teal);
+            transform: translateY(-1px);
+        }
+
+        .btn-gold-wind {
+            background: var(--gold);
+            color: var(--sky);
+            box-shadow: 0 0 18px rgba(240,192,64,0.3);
+        }
+        .btn-gold-wind:hover {
+            background: #ffe070;
+            box-shadow: 0 0 30px rgba(240,192,64,0.5);
+            color: var(--sky);
+            transform: translateY(-1px);
+        }
+
+        /* ─── FORM ELEMENTS ─── */
+        .form-group { margin-bottom: 1.1rem; }
+
+        label {
+            display: block;
+            font-family: var(--font-head);
+            font-size: 0.82rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--teal);
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        input[type="text"], input[type="password"], input[type="email"],
+        input[type="number"], input[type="tel"], select, textarea {
+            width: 100%;
+            background: rgba(10,22,40,0.7);
+            border: 1px solid var(--border);
+            color: var(--white);
+            font-family: var(--font-body);
+            font-size: 0.95rem;
+            padding: 9px 14px;
+            border-radius: var(--radius);
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--teal);
+            box-shadow: 0 0 0 2px rgba(0,200,212,0.15);
+        }
+
+        input::placeholder { color: rgba(126,168,204,0.45); }
+
+        /* ─── ALERTS/MESSAGES ─── */
+        .alert-wind {
+            padding: 10px 16px;
+            border-radius: var(--radius);
+            margin-bottom: 1rem;
+            font-family: var(--font-body);
+            font-size: 0.9rem;
+        }
+        .alert-error { background: rgba(220,50,50,0.15); border: 1px solid rgba(220,50,50,0.4); color: #ff8080; }
+        .alert-success { background: rgba(0,200,212,0.1); border: 1px solid rgba(0,200,212,0.35); color: var(--teal); }
+
+        /* ─── TABLE ─── */
+        .table { width: 100%; border-collapse: collapse; font-family: var(--font-body); font-size: 0.88rem; }
+        .table thead th { font-family: var(--font-head); font-size: 0.82rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--teal); border-bottom: 1px solid var(--border); padding: 10px 12px; text-align: left; }
+        .table tbody td { padding: 9px 12px; border-bottom: 1px solid rgba(0,200,212,0.07); color: var(--muted); }
+        .table tbody tr:hover td { background: rgba(0,200,212,0.05); color: var(--white); }
+
+        /* ─── DIVIDER ─── */
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--teal-dim), transparent);
+            margin: 1.5rem 0;
+        }
+
+        /* ─── SECTION LABEL ─── */
+        .section-label {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--teal-dim);
+            margin-bottom: 0.4rem;
+        }
+
+        /* ─── FOOTER ─── */
+        footer {
+            text-align: center;
+            padding: 2rem 1rem;
+            border-top: 1px solid var(--border);
+            background: rgba(8,16,34,0.7);
+        }
+        footer p {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            letter-spacing: 0.1em;
+            color: rgba(126,168,204,0.5);
+            margin: 0;
+        }
+        footer a { color: var(--teal-dim); text-decoration: none; }
+        footer a:hover { color: var(--teal); }
+
+        /* ─── UTILITY ─── */
+        .text-teal { color: var(--teal); }
+        .text-gold { color: var(--gold); }
+        .text-muted-wind { color: var(--muted); }
+        .mt-1 { margin-top: 0.5rem; }
+        .mt-2 { margin-top: 1rem; }
+        .mt-3 { margin-top: 1.5rem; }
+        .mt-4 { margin-top: 2rem; }
+        .mb-1 { margin-bottom: 0.5rem; }
+        .mb-2 { margin-bottom: 1rem; }
+        .mb-3 { margin-bottom: 1.5rem; }
+        .gap-2 { gap: 0.75rem; }
+        .flex { display: flex; }
+        .flex-wrap { flex-wrap: wrap; }
+        .items-center { align-items: center; }
+
+        /* ─── RESPONSIVE ─── */
+        @media (max-width: 768px) {
+            .nav-toggle { display: flex; }
+
+            .nav-links {
+                position: fixed;
+                top: var(--navbar-h); left: 0; right: 0;
+                background: rgba(8,16,34,0.97);
+                border-bottom: 1px solid var(--border);
+                flex-direction: column;
+                padding: 1.2rem 1.5rem;
+                gap: 4px;
+                transform: translateY(-110%);
+                transition: transform 0.3s ease;
+                z-index: 999;
+            }
+
+            .nav-links.open { transform: translateY(0); }
+            .nav-links a { padding: 10px 14px; width: 100%; text-align: center; }
+
+            .page-card { padding: 1.5rem 1.2rem; margin: 1rem 0.5rem; }
+            h2 { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <a href="{% url 'index' %}" class="nav-brand">
+            <div class="nav-brand-icon">
+                <!-- Wind turbine SVG icon -->
+                <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="18" cy="18" r="3" fill="#00c8d4"/>
+                    <!-- Blade 1 (up) -->
+                    <path d="M18 15 C17 10 14 4 18 2 C22 4 19 10 18 15Z" fill="#00c8d4" opacity="0.9"/>
+                    <!-- Blade 2 (lower right) -->
+                    <path d="M20.6 19.5 C25 21 31 21 31.5 17 C29 13.5 24 16 20.6 19.5Z" fill="#00c8d4" opacity="0.75"/>
+                    <!-- Blade 3 (lower left) -->
+                    <path d="M15.4 19.5 C11 21 5 21 4.5 17 C7 13.5 12 16 15.4 19.5Z" fill="#00c8d4" opacity="0.6"/>
+                    <!-- Tower -->
+                    <rect x="17" y="21" width="2" height="13" rx="1" fill="#163a6e"/>
+                    <!-- Base -->
+                    <rect x="14" y="33" width="8" height="2" rx="1" fill="#163a6e"/>
+                </svg>
+            </div>
+            <div>
+                <span class="nav-brand-text">Wind<span>ML</span></span>
+                <span class="nav-brand-sub">Power Forecasting System</span>
+            </div>
+        </a>
+
+        <div class="nav-spacer"></div>
+
+        <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+            <span></span><span></span><span></span>
+        </button>
+
+        <ul class="nav-links" id="navLinks">
+            <li><a href="{% url 'index' %}">Home</a></li>
+            <li><a href="{% url 'UserLogin' %}" class="btn-nav">User Login</a></li>
+            <li><a href="{% url 'AdminLogin' %}" class="btn-nav">Admin</a></li>
+            <li><a href="{% url 'UserRegisterForm' %}" class="btn-nav" style="border-color:var(--gold);color:var(--gold);">Register</a></li>
+        </ul>
+    </nav>
+
+    <!-- MAIN -->
+    <main class="main-content">
+        {% if messages %}
+        <div style="max-width:960px;margin:0 auto 1rem;">
+            {% for message in messages %}
+            <div class="alert-wind {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% block contents %}{% endblock %}
+    </main>
+
+    <!-- FOOTER -->
+    <footer>
+        <p>WindML &mdash; Active Wind Power Forecasting &nbsp;|&nbsp; ML-Powered Energy Intelligence &nbsp;|&nbsp; &copy; 2025</p>
+    </footer>
+
+    <script>
+        // Mobile nav toggle
+        const toggle = document.getElementById('navToggle');
+        const links  = document.getElementById('navLinks');
+        if (toggle && links) {
+            toggle.addEventListener('click', () => links.classList.toggle('open'));
+        }
+        // Close on link click
+        links && links.querySelectorAll('a').forEach(a =>
+            a.addEventListener('click', () => links.classList.remove('open'))
+        );
+    </script>
+</body>
+</html>

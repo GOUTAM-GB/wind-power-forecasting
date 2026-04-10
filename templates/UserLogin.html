@@ -1,0 +1,214 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block contents %}
+
+<div class="auth-wrapper">
+    <div class="auth-card">
+
+        <!-- Header -->
+        <div class="auth-header">
+            <div class="auth-icon">
+                <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="24" cy="16" r="8" stroke="#00c8d4" stroke-width="1.8"/>
+                    <path d="M8 40 C8 30 40 30 40 40" stroke="#00c8d4" stroke-width="1.8" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <div class="section-label" style="justify-content:center;display:flex;">// Secure Access</div>
+            <h2 class="auth-title">User <span class="text-teal">Login</span></h2>
+            <p class="auth-subtitle">Sign in to access your wind power forecasting dashboard.</p>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Form -->
+        <form action="{% url 'UserLoginCheck' %}" method="POST" class="auth-form">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="loginid">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="margin-right:5px;vertical-align:middle"><circle cx="6" cy="4" r="2.5" stroke="#00c8d4" stroke-width="1.2"/><path d="M1 11 C1 7.5 11 7.5 11 11" stroke="#00c8d4" stroke-width="1.2" stroke-linecap="round"/></svg>
+                    Login ID
+                </label>
+                <input type="text" id="loginid" name="loginid" placeholder="Enter your username" required autocomplete="username">
+            </div>
+
+            <div class="form-group">
+                <label for="pswd">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="margin-right:5px;vertical-align:middle"><rect x="2" y="5" width="8" height="6" rx="1.5" stroke="#00c8d4" stroke-width="1.2"/><path d="M4 5V3.5a2 2 0 014 0V5" stroke="#00c8d4" stroke-width="1.2" stroke-linecap="round"/></svg>
+                    Password
+                </label>
+                <div class="input-eye-wrap">
+                    <input type="password" id="pswd" name="pswd" placeholder="Enter your password" required autocomplete="current-password">
+                    <button type="button" class="eye-toggle" onclick="togglePass('pswd', this)" tabindex="-1" aria-label="Show password">
+                        <svg class="eye-icon" viewBox="0 0 20 20" fill="none"><path d="M1 10s3.5-6 9-6 9 6 9 6-3.5 6-9 6-9-6-9-6z" stroke="#7ea8cc" stroke-width="1.4"/><circle cx="10" cy="10" r="2.5" stroke="#7ea8cc" stroke-width="1.4"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            {% if messages %}
+            <div class="auth-messages">
+                {% for message in messages %}
+                <div class="alert-wind {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="auth-actions">
+                <button type="submit" class="btn-wind btn-primary-wind w-full">
+                    Sign In
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="margin-left:6px;vertical-align:middle"><path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <button type="reset" class="btn-wind btn-outline-wind w-full">Reset</button>
+            </div>
+        </form>
+
+        <div class="divider"></div>
+
+        <div class="auth-footer">
+            <p>Don't have an account? <a href="{% url 'UserRegisterForm' %}" class="auth-link">Create one here</a></p>
+            <p>Administrator? <a href="{% url 'AdminLogin' %}" class="auth-link">Admin Login →</a></p>
+        </div>
+    </div>
+</div>
+
+<style>
+.auth-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 120px);
+    padding: 2rem 1rem;
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 420px;
+    background: rgba(14,32,64,0.82);
+    border: 1px solid rgba(0,200,212,0.22);
+    border-radius: 6px;
+    padding: 2.2rem 2rem;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 12px 48px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,200,212,0.06);
+    animation: fadeUp 0.4s ease both;
+}
+
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.auth-header { text-align: center; margin-bottom: 1.2rem; }
+
+.auth-icon {
+    width: 52px; height: 52px;
+    background: rgba(0,200,212,0.08);
+    border: 1px solid rgba(0,200,212,0.25);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 0.8rem;
+}
+
+.auth-icon svg { width: 28px; height: 28px; }
+
+.auth-title {
+    font-family: var(--font-head);
+    font-size: 1.85rem;
+    font-weight: 700;
+    color: var(--white);
+    margin: 0.3rem 0 0.5rem;
+}
+
+.auth-subtitle {
+    font-size: 0.86rem;
+    color: var(--muted);
+    margin: 0;
+    line-height: 1.5;
+}
+
+.auth-form { margin-top: 1.2rem; }
+
+.form-group { margin-bottom: 1rem; }
+
+label {
+    display: block;
+    font-family: var(--font-head);
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--teal);
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="email"] {
+    width: 100%;
+    background: rgba(10,22,40,0.75);
+    border: 1px solid rgba(0,200,212,0.22);
+    color: var(--white);
+    font-family: var(--font-body);
+    font-size: 0.93rem;
+    padding: 9px 14px;
+    border-radius: 3px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+}
+
+input:focus {
+    border-color: var(--teal);
+    box-shadow: 0 0 0 2px rgba(0,200,212,0.14);
+}
+
+input::placeholder { color: rgba(126,168,204,0.4); }
+
+.input-eye-wrap { position: relative; }
+.input-eye-wrap input { padding-right: 40px; }
+
+.eye-toggle {
+    position: absolute;
+    right: 10px; top: 50%;
+    transform: translateY(-50%);
+    background: none; border: none;
+    cursor: pointer; padding: 2px;
+    display: flex; align-items: center;
+}
+
+.eye-icon { width: 18px; height: 18px; }
+
+.auth-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-top: 1.4rem;
+}
+
+.w-full { width: 100%; text-align: center; }
+
+.auth-messages { margin: 0.8rem 0; }
+
+.auth-footer { text-align: center; margin-top: 1rem; }
+.auth-footer p { font-size: 0.84rem; color: var(--muted); margin: 0.3rem 0; }
+.auth-link { color: var(--teal); text-decoration: none; font-weight: 600; transition: color 0.2s; }
+.auth-link:hover { color: #00e8f8; }
+
+@media (max-width: 480px) {
+    .auth-card { padding: 1.6rem 1.2rem; }
+}
+</style>
+
+<script>
+function togglePass(id, btn) {
+    const inp = document.getElementById(id);
+    const showing = inp.type === 'text';
+    inp.type = showing ? 'password' : 'text';
+    btn.querySelector('.eye-icon').style.opacity = showing ? '1' : '0.5';
+}
+</script>
+
+{% endblock %}

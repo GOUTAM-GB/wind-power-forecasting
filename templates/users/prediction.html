@@ -1,0 +1,249 @@
+{% extends 'users/userbase.html' %}
+{% load static %}
+
+{% block contents %}
+
+<div style="margin-bottom:1.5rem;">
+    <div class="section-label">// {{ model_name|default:"Selected" }} Model · Real-time Inference</div>
+    <h1 class="page-title">Wind Power <span>Prediction</span></h1>
+    <p style="color:var(--muted);font-size:0.88rem;margin-top:0.3rem;">Enter current turbine sensor readings to get an instant Active Wind Power forecast in kW.</p>
+</div>
+
+<div class="predict-layout">
+
+    <!-- INPUT FORM -->
+    <div class="page-card predict-form-card">
+        <div class="section-label">// Sensor Input</div>
+        <h2 class="page-title" style="font-size:1.15rem;margin-bottom:0.8rem;">Input Parameters</h2>
+        <div class="divider"></div>
+
+        <form method="POST" action="{% url 'predict' %}">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label>
+                    <svg width="11" height="11" viewBox="0 0 12 12" fill="none" style="margin-right:4px;vertical-align:middle"><path d="M2 8 Q4 4 6 8 Q8 4 10 8" stroke="#00c8d4" stroke-width="1.2" stroke-linecap="round"/></svg>
+                    Wind Speed
+                    <span class="input-unit">m/s</span>
+                </label>
+                <input type="number" name="wind_speed" id="wind_speed" step="any"
+                    placeholder="e.g. 11.24" required
+                    value="{% if request.POST.wind_speed %}{{ request.POST.wind_speed }}{% endif %}">
+                <div class="input-hint">Typical range: 0 – 30 m/s</div>
+            </div>
+
+            <div class="form-group">
+                <label>
+                    <svg width="11" height="11" viewBox="0 0 12 12" fill="none" style="margin-right:4px;vertical-align:middle"><circle cx="6" cy="6" r="4.5" stroke="#00c8d4" stroke-width="1.2"/><polygon points="6,2.5 7,6 6,5 5,6" fill="#f0c040"/></svg>
+                    Wind Direction
+                    <span class="input-unit">degrees</span>
+                </label>
+                <input type="number" name="wind_dir" id="wind_dir" step="any"
+                    placeholder="e.g. 137.7" required
+                    value="{% if request.POST.wind_dir %}{{ request.POST.wind_dir }}{% endif %}">
+                <div class="input-hint">Range: 0° – 360° (North = 0°)</div>
+            </div>
+
+            <div class="form-group">
+                <label>
+                    <svg width="11" height="11" viewBox="0 0 12 12" fill="none" style="margin-right:4px;vertical-align:middle"><rect x="4.5" y="2" width="3" height="6" rx="1.5" stroke="#00c8d4" stroke-width="1.1"/><circle cx="6" cy="9.5" r="1.8" stroke="#00c8d4" stroke-width="1.1" fill="rgba(0,200,212,0.1)"/></svg>
+                    Temperature
+                    <span class="input-unit">°C</span>
+                </label>
+                <input type="number" name="temp" id="temp" step="any"
+                    placeholder="e.g. 14.56" required
+                    value="{% if request.POST.temp %}{{ request.POST.temp }}{% endif %}">
+                <div class="input-hint">Ambient air temperature at hub height</div>
+            </div>
+
+            <div class="form-group">
+                <label>
+                    <svg width="11" height="11" viewBox="0 0 12 12" fill="none" style="margin-right:4px;vertical-align:middle"><circle cx="6" cy="6" r="2" fill="#00c8d4"/><path d="M6,4 C5.5,2.5 4.5,1 6,0.5 C7.5,1 6.5,2.5 6,4Z" fill="#c8ddf0" opacity="0.8"/><path d="M7.7,7 C9,7.5 10.5,7.5 10.7,6 C9.8,4.8 8.2,5.7 7.7,7Z" fill="#c8ddf0" opacity="0.7"/><path d="M4.3,7 C3,7.5 1.5,7.5 1.3,6 C2.2,4.8 3.8,5.7 4.3,7Z" fill="#c8ddf0" opacity="0.6"/></svg>
+                    Rotor Speed
+                    <span class="input-unit">RPM</span>
+                </label>
+                <input type="number" name="rotor_speed" id="rotor_speed" step="any"
+                    placeholder="e.g. 24.76" required
+                    value="{% if request.POST.rotor_speed %}{{ request.POST.rotor_speed }}{% endif %}">
+                <div class="input-hint">Angular velocity of rotor blades</div>
+            </div>
+
+            <div class="form-group">
+                <label>
+                    <svg width="11" height="11" viewBox="0 0 12 12" fill="none" style="margin-right:4px;vertical-align:middle"><circle cx="6" cy="6" r="4.5" stroke="#00c8d4" stroke-width="1.2"/><path d="M6 3.5 L6 6 L8 6" stroke="#f0c040" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    Atmospheric Pressure
+                    <span class="input-unit">hPa</span>
+                </label>
+                <input type="number" name="pressure" id="pressure" step="any"
+                    placeholder="e.g. 1027.96" required
+                    value="{% if request.POST.pressure %}{{ request.POST.pressure }}{% endif %}">
+                <div class="input-hint">Barometric pressure at sea level</div>
+            </div>
+
+            <div style="margin-top:1.5rem;display:flex;gap:0.8rem;flex-wrap:wrap;">
+                <button type="submit" class="btn-wind btn-teal" style="flex:1;text-align:center;">
+                    ⚡ Predict Power Output
+                </button>
+                <button type="reset" class="btn-wind btn-outline" style="padding:9px 18px;">Reset</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- RESULT PANEL -->
+    <div class="predict-result-col">
+
+        {% if prediction is not None %}
+        <!-- Has result -->
+        <div class="page-card result-card result-card--active">
+            <div class="section-label">// Model Output</div>
+            <h2 class="page-title" style="font-size:1.1rem;margin-bottom:1rem;">Prediction Result</h2>
+            <div class="divider"></div>
+
+            <div class="result-display">
+                <div class="result-label">Active Wind Power</div>
+                <div class="result-value">
+                    {% if "Error" in prediction|stringformat:"s" %}
+                    <span style="color:#ff8080;font-size:1.4rem;">{{ prediction }}</span>
+                    {% else %}
+                    {{ prediction|floatformat:2 }}
+                    {% endif %}
+                </div>
+                {% if "Error" not in prediction|stringformat:"s" %}
+                <div class="result-unit">kW</div>
+                <div class="result-bar-wrap">
+                    <div class="result-bar-track">
+                        <div class="result-bar-fill" id="resultBar"></div>
+                    </div>
+                </div>
+                <!-- UPDATED to use dynamic model_name -->
+                <div class="result-note">Predicted using {{ model_name }} with StandardScaler normalisation</div>
+                {% endif %}
+            </div>
+
+            <!-- Input echo -->
+            <div class="divider" style="margin-top:1.2rem;"></div>
+            <div class="section-label" style="margin-top:0.8rem;">// Inputs Used</div>
+            <div class="echo-grid">
+                <div class="echo-item"><span class="echo-key">Wind Speed</span><span class="echo-val">{{ request.POST.wind_speed }} m/s</span></div>
+                <div class="echo-item"><span class="echo-key">Direction</span><span class="echo-val">{{ request.POST.wind_dir }}°</span></div>
+                <div class="echo-item"><span class="echo-key">Temperature</span><span class="echo-val">{{ request.POST.temp }} °C</span></div>
+                <div class="echo-item"><span class="echo-key">Rotor Speed</span><span class="echo-val">{{ request.POST.rotor_speed }} RPM</span></div>
+                <div class="echo-item"><span class="echo-key">Pressure</span><span class="echo-val">{{ request.POST.pressure }} hPa</span></div>
+            </div>
+        </div>
+
+        {% else %}
+        <!-- Empty state -->
+        <div class="page-card result-card result-card--empty">
+            <div class="empty-icon">
+                <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="32" cy="32" r="28" stroke="rgba(0,200,212,0.2)" stroke-width="1.5" stroke-dasharray="4 4"/>
+                    <circle cx="32" cy="32" r="4" fill="rgba(0,200,212,0.3)"/>
+                    <path d="M32,28 C31,22 28,14 32,10 C36,14 33,22 32,28Z" fill="rgba(0,200,212,0.3)"/>
+                    <path d="M35.5,34 C41,36 47,36 47.5,32 C45,28.5 39,31 35.5,34Z" fill="rgba(0,200,212,0.25)"/>
+                    <path d="M28.5,34 C23,36 17,36 16.5,32 C19,28.5 25,31 28.5,34Z" fill="rgba(0,200,212,0.2)"/>
+                </svg>
+            </div>
+            <div class="empty-title">Awaiting Input</div>
+            <div class="empty-desc">Fill in all 5 sensor parameters and click <strong style="color:var(--white)">Predict Power Output</strong> to get an instant forecast.</div>
+        </div>
+        {% endif %}
+
+        <!-- Info card -->
+        <div class="page-card" style="margin-top:1rem;padding:1.2rem 1.3rem;">
+            <div class="section-label">// Model Info</div>
+            <div class="info-mini-rows">
+                <div class="im-row"><span class="im-k">Algorithm</span><span class="im-v text-teal">{{ model_name }}</span></div>
+                <div class="im-row"><span class="im-k">Features</span><span class="im-v">5 inputs</span></div>
+                <div class="im-row"><span class="im-k">Preprocessing</span><span class="im-v">StandardScaler</span></div>
+                <div class="im-row"><span class="im-k">Output</span><span class="im-v text-gold">Active Power (kW)</span></div>
+            </div>
+            <div style="margin-top:1rem;">
+                <a href="{% url 'train' %}" class="btn-wind btn-outline" style="font-size:0.8rem;padding:7px 16px;width:100%;text-align:center;display:block;">
+                    ↺ Re-train Model
+                </a>
+            </div>
+        </div>
+
+    </div><!-- end result col -->
+</div><!-- end layout -->
+
+<style>
+.predict-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.2rem;
+    align-items: start;
+}
+.predict-form-card { }
+
+/* Input styling */
+.input-unit {
+    font-family: var(--font-mono); font-size: 0.65rem;
+    color: var(--gold); letter-spacing: 0.1em;
+    margin-left: 5px; opacity: 0.8;
+}
+.input-hint {
+    font-family: var(--font-mono); font-size: 0.65rem;
+    color: rgba(126,168,204,0.45); margin-top: 4px;
+    letter-spacing: 0.04em;
+}
+
+/* Result card */
+.result-card { text-align: center; }
+.result-card--empty { border-style: dashed; border-color: rgba(0,200,212,0.15); }
+.result-card--active { border-color: rgba(0,200,212,0.4); box-shadow: 0 0 28px rgba(0,200,212,0.1); }
+
+.result-display { padding: 0.8rem 0; }
+.result-label { font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.4rem; }
+.result-value { font-family: var(--font-head); font-size: 3rem; font-weight: 700; color: var(--teal); line-height: 1; }
+.result-unit { font-family: var(--font-head); font-size: 1rem; color: var(--teal-dim); margin: 4px 0 1rem; letter-spacing: 0.08em; }
+.result-note { font-size: 0.75rem; color: var(--muted); margin-top: 0.6rem; line-height: 1.5; }
+
+.result-bar-wrap { padding: 0 2rem; margin-bottom: 0.3rem; }
+.result-bar-track { height: 5px; background: rgba(0,200,212,0.1); border-radius: 3px; overflow: hidden; }
+.result-bar-fill { height: 100%; background: linear-gradient(90deg, var(--teal-dim), var(--teal)); border-radius: 3px; transition: width 1s ease; width: 0%; }
+
+/* Echo grid */
+.echo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 0.6rem; text-align: left; }
+.echo-item { background: rgba(10,22,40,0.5); border-radius: 3px; padding: 0.5rem 0.7rem; }
+.echo-key { display: block; font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 2px; }
+.echo-val { font-family: var(--font-head); font-size: 0.9rem; color: var(--white); font-weight: 600; }
+
+/* Empty */
+.empty-icon { width: 64px; height: 64px; margin: 1rem auto 1rem; }
+.empty-icon svg { width: 100%; height: 100%; }
+.empty-title { font-family: var(--font-head); font-size: 1.2rem; color: var(--muted); margin-bottom: 0.5rem; }
+.empty-desc { font-size: 0.82rem; color: rgba(126,168,204,0.55); line-height: 1.6; max-width: 240px; margin: 0 auto; }
+
+/* Info mini */
+.info-mini-rows { display: flex; flex-direction: column; gap: 0; }
+.im-row { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid rgba(0,200,212,0.07); }
+.im-row:last-child { border: none; }
+.im-k { font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.im-v { font-family: var(--font-body); font-size: 0.84rem; color: var(--white); }
+.text-teal { color: var(--teal) !important; }
+.text-gold { color: var(--gold) !important; }
+
+@media (max-width: 860px) {
+    .predict-layout { grid-template-columns: 1fr; }
+    .result-value { font-size: 2.4rem; }
+}
+</style>
+
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+    const bar = document.getElementById('resultBar');
+    if (bar) {
+        const raw = "{{ prediction }}";
+        const val = parseFloat(raw);
+        if (!isNaN(val)) {
+            const maxPower = 2000;
+            const pct = Math.min(Math.max((val / maxPower) * 100, 2), 100);
+            setTimeout(() => { bar.style.width = pct.toFixed(1) + '%'; }, 300);
+        }
+    }
+});
+</script>
+
+{% endblock %}

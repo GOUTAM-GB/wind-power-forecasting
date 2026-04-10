@@ -1,0 +1,15 @@
+# Environments
+venv/
+env/
+.env
+
+# Python caching
+__pycache__/
+*.pyc
+
+# Django
+db.sqlite3
+staticfiles/
+
+# System files
+.DS_Store

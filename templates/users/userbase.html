@@ -1,0 +1,339 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WindML — User Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Exo+2:wght@300;400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sky: #0a1628;
+            --sky-mid: #0e2040;
+            --sky-light: #163a6e;
+            --teal: #00c8d4;
+            --teal-dim: #007a82;
+            --gold: #f0c040;
+            --gold-dim: #b89020;
+            --white: #e8f4fc;
+            --muted: #7ea8cc;
+            --card-bg: rgba(14,32,64,0.82);
+            --border: rgba(0,200,212,0.22);
+            --navbar-h: 64px;
+            --radius: 4px;
+            --font-head: 'Rajdhani', sans-serif;
+            --font-body: 'Exo 2', sans-serif;
+            --font-mono: 'Share Tech Mono', monospace;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: var(--font-body);
+            background-color: var(--sky);
+            color: var(--white);
+            min-height: 100vh;
+            overflow-x: hidden;
+            padding-top: var(--navbar-h);
+        }
+
+        body::before {
+            content: '';
+            position: fixed; inset: 0;
+            background-image: url("{% static 'pexels-alfomedeiros-15268778.jpg' %}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            filter: brightness(0.25) saturate(0.65);
+            z-index: -2;
+        }
+        body::after {
+            content: '';
+            position: fixed; inset: 0;
+            background:
+                radial-gradient(ellipse 80% 50% at 50% 0%, rgba(0,160,180,0.15) 0%, transparent 70%),
+                linear-gradient(180deg, rgba(10,22,40,0.55) 0%, rgba(10,22,40,0.88) 100%);
+            z-index: -1;
+        }
+
+        /* ─── NAVBAR ─── */
+        .user-navbar {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: var(--navbar-h);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            padding: 0 1.5rem;
+            background: rgba(8,16,34,0.93);
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            gap: 1rem;
+        }
+
+        .nav-brand {
+            display: flex; align-items: center; gap: 9px;
+            text-decoration: none; flex-shrink: 0;
+        }
+        .nav-brand-icon {
+            width: 32px; height: 32px;
+            flex-shrink: 0;
+        }
+        .nav-brand-icon svg { width: 100%; height: 100%; }
+        .nav-brand-text {
+            font-family: var(--font-head);
+            font-size: 1.3rem; font-weight: 700;
+            letter-spacing: 0.06em; color: var(--white); line-height: 1;
+        }
+        .nav-brand-text span { color: var(--teal); }
+        .nav-brand-sub {
+            font-family: var(--font-mono);
+            font-size: 0.5rem; color: var(--muted);
+            letter-spacing: 0.15em; text-transform: uppercase;
+            display: block; margin-top: 2px;
+        }
+
+        .nav-spacer { flex: 1; }
+
+        .nav-toggle {
+            display: none; flex-direction: column; gap: 5px;
+            cursor: pointer; padding: 8px; background: none; border: none;
+        }
+        .nav-toggle span { display: block; width: 22px; height: 2px; background: var(--teal); border-radius: 2px; transition: all 0.3s; }
+
+        .nav-links {
+            display: flex; align-items: center; gap: 2px; list-style: none;
+        }
+        .nav-links a {
+            font-family: var(--font-head);
+            font-size: 0.88rem; font-weight: 600;
+            letter-spacing: 0.07em; color: var(--muted);
+            text-decoration: none; padding: 6px 13px;
+            border-radius: var(--radius);
+            transition: color 0.2s;
+            text-transform: uppercase;
+            position: relative;
+        }
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 2px; left: 13px; right: 13px;
+            height: 1px; background: var(--teal);
+            transform: scaleX(0); transition: transform 0.2s;
+        }
+        .nav-links a:hover { color: var(--teal); }
+        .nav-links a:hover::after { transform: scaleX(1); }
+        .nav-links a.active { color: var(--teal); }
+        .nav-links a.active::after { transform: scaleX(1); }
+
+        .nav-links .btn-logout {
+            background: transparent;
+            border: 1px solid rgba(255,107,107,0.35);
+            color: #ff9090;
+            padding: 5px 14px;
+            border-radius: 2px;
+            transition: background 0.2s, box-shadow 0.2s;
+        }
+        .nav-links .btn-logout:hover {
+            background: rgba(255,107,107,0.1);
+            color: #ff6b6b;
+            box-shadow: 0 0 14px rgba(255,107,107,0.2);
+        }
+        .nav-links .btn-logout::after { display: none; }
+
+        /* ─── MAIN ─── */
+        .user-main {
+            min-height: calc(100vh - var(--navbar-h));
+            padding: 2rem 1.5rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* ─── SHARED COMPONENTS (inherited by child pages) ─── */
+        .page-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 2rem 2rem;
+            backdrop-filter: blur(14px);
+            box-shadow: 0 8px 40px rgba(0,0,0,0.45);
+            margin-bottom: 1.5rem;
+        }
+
+        .page-title {
+            font-family: var(--font-head);
+            font-size: 1.7rem; font-weight: 700;
+            color: var(--white); margin-bottom: 0.3rem;
+        }
+        .page-title span { color: var(--teal); }
+
+        .section-label {
+            font-family: var(--font-mono);
+            font-size: 0.68rem; letter-spacing: 0.2em;
+            text-transform: uppercase; color: var(--teal-dim); margin-bottom: 0.4rem;
+        }
+
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--teal-dim), transparent);
+            margin: 1.2rem 0;
+        }
+
+        /* Buttons */
+        .btn-wind {
+            display: inline-block;
+            font-family: var(--font-head); font-weight: 600;
+            font-size: 0.92rem; letter-spacing: 0.1em; text-transform: uppercase;
+            padding: 9px 24px; border-radius: 2px;
+            text-decoration: none; cursor: pointer; border: none;
+            transition: all 0.25s;
+        }
+        .btn-teal { background: var(--teal); color: var(--sky); box-shadow: 0 0 18px rgba(0,200,212,0.3); }
+        .btn-teal:hover { background: #00e8f8; box-shadow: 0 0 28px rgba(0,200,212,0.5); color: var(--sky); transform: translateY(-1px); }
+        .btn-outline { background: transparent; color: var(--teal); border: 1px solid var(--teal-dim); }
+        .btn-outline:hover { background: rgba(0,200,212,0.1); transform: translateY(-1px); color: var(--teal); }
+        .btn-gold { background: var(--gold); color: var(--sky); box-shadow: 0 0 16px rgba(240,192,64,0.3); }
+        .btn-gold:hover { background: #ffe070; box-shadow: 0 0 28px rgba(240,192,64,0.45); color: var(--sky); transform: translateY(-1px); }
+
+        /* Alerts */
+        .alert-wind { padding: 10px 16px; border-radius: var(--radius); margin-bottom: 1rem; font-family: var(--font-body); font-size: 0.9rem; }
+        .alert-error { background: rgba(220,50,50,0.14); border: 1px solid rgba(220,50,50,0.38); color: #ff8080; }
+        .alert-success { background: rgba(0,200,212,0.1); border: 1px solid rgba(0,200,212,0.32); color: var(--teal); }
+
+        /* Form elements */
+        label {
+            display: block;
+            font-family: var(--font-head); font-size: 0.76rem;
+            letter-spacing: 0.1em; text-transform: uppercase;
+            color: var(--teal); margin-bottom: 5px; font-weight: 600;
+        }
+        input[type="text"], input[type="number"], input[type="email"], input[type="password"], select, textarea {
+            width: 100%;
+            background: rgba(10,22,40,0.75);
+            border: 1px solid var(--border);
+            color: var(--white);
+            font-family: var(--font-body); font-size: 0.92rem;
+            padding: 9px 13px; border-radius: 3px; outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            box-sizing: border-box;
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--teal);
+            box-shadow: 0 0 0 2px rgba(0,200,212,0.13);
+        }
+        input::placeholder { color: rgba(126,168,204,0.38); font-size: 0.85rem; }
+        .form-group { margin-bottom: 1rem; }
+
+        /* Table */
+        .wind-table { width: 100%; border-collapse: collapse; font-family: var(--font-body); font-size: 0.87rem; }
+        .wind-table thead th {
+            font-family: var(--font-head); font-size: 0.76rem; letter-spacing: 0.1em;
+            text-transform: uppercase; color: var(--teal);
+            background: rgba(10,22,40,0.8); border-bottom: 1px solid var(--border);
+            padding: 11px 13px; text-align: left; position: sticky; top: 0; white-space: nowrap;
+        }
+        .wind-table tbody td { padding: 9px 13px; border-bottom: 1px solid rgba(0,200,212,0.07); color: var(--muted); }
+        .wind-table tbody tr:hover td { background: rgba(0,200,212,0.04); color: var(--white); }
+
+        /* Scrollbar */
+        .table-scroll { overflow-x: auto; overflow-y: auto; }
+        .table-scroll::-webkit-scrollbar { height: 5px; width: 5px; }
+        .table-scroll::-webkit-scrollbar-track { background: rgba(14,32,64,0.4); }
+        .table-scroll::-webkit-scrollbar-thumb { background: rgba(0,200,212,0.3); border-radius: 3px; }
+
+        /* Footer */
+        footer {
+            text-align: center; padding: 1.5rem 1rem;
+            border-top: 1px solid var(--border);
+        }
+        footer p { font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.1em; color: rgba(126,168,204,0.4); margin: 0; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-toggle { display: flex; }
+            .nav-links {
+                position: fixed;
+                top: var(--navbar-h); left: 0; right: 0;
+                background: rgba(8,16,34,0.97);
+                border-bottom: 1px solid var(--border);
+                flex-direction: column;
+                padding: 1.2rem 1.5rem; gap: 4px;
+                transform: translateY(-110%); transition: transform 0.3s ease; z-index: 999;
+            }
+            .nav-links.open { transform: translateY(0); }
+            .nav-links a { padding: 10px 14px; width: 100%; text-align: center; }
+            .user-main { padding: 1.5rem 1rem; }
+            .page-card { padding: 1.4rem 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- USER NAVBAR -->
+    <nav class="user-navbar">
+        <a href="{% url 'UserHome' %}" class="nav-brand">
+            <div class="nav-brand-icon">
+                <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="18" cy="18" r="3" fill="#00c8d4"/>
+                    <path d="M18 15 C17 10 14 4 18 2 C22 4 19 10 18 15Z" fill="#00c8d4" opacity="0.9"/>
+                    <path d="M20.6 19.5 C25 21 31 21 31.5 17 C29 13.5 24 16 20.6 19.5Z" fill="#00c8d4" opacity="0.75"/>
+                    <path d="M15.4 19.5 C11 21 5 21 4.5 17 C7 13.5 12 16 15.4 19.5Z" fill="#00c8d4" opacity="0.6"/>
+                    <rect x="17" y="21" width="2" height="11" rx="1" fill="#163a6e"/>
+                </svg>
+            </div>
+            <div>
+                <span class="nav-brand-text">Wind<span>ML</span></span>
+                <span class="nav-brand-sub">User Dashboard</span>
+            </div>
+        </a>
+
+        <div class="nav-spacer"></div>
+
+        <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+            <span></span><span></span><span></span>
+        </button>
+
+        <ul class="nav-links" id="navLinks">
+            <li><a href="{% url 'UserHome' %}" class="{% if request.resolver_match.url_name == 'UserHome' %}active{% endif %}">Home</a></li>
+            <li><a href="{% url 'viewdataset' %}" class="{% if request.resolver_match.url_name == 'viewdataset' %}active{% endif %}">Dataset</a></li>
+            <li><a href="{% url 'train' %}" class="{% if request.resolver_match.url_name == 'train' %}active{% endif %}">Training</a></li>
+            <li><a href="{% url 'predict' %}" class="{% if request.resolver_match.url_name == 'predict' %}active{% endif %}">Prediction</a></li>
+            <li><a href="{% url 'logout' %}" class="btn-logout">Logout</a></li>
+        </ul>
+    </nav>
+
+    <!-- MESSAGES -->
+    {% if messages %}
+    <div style="max-width:1200px;margin:0.8rem auto 0;padding:0 1.5rem;">
+        {% for message in messages %}
+        <div class="alert-wind {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- MAIN -->
+    <main class="user-main">
+        {% block contents %}{% endblock %}
+    </main>
+
+    <footer>
+        <p>WindML &mdash; Active Wind Power Forecasting &mdash; KNN Regression &mdash; &copy; 2025</p>
+    </footer>
+
+    <script>
+        const toggle = document.getElementById('navToggle');
+        const links  = document.getElementById('navLinks');
+        if (toggle && links) {
+            toggle.addEventListener('click', () => links.classList.toggle('open'));
+        }
+        links && links.querySelectorAll('a').forEach(a =>
+            a.addEventListener('click', () => links.classList.remove('open'))
+        );
+    </script>
+</body>
+</html>

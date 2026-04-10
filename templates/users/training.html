@@ -1,0 +1,282 @@
+{% extends 'users/userbase.html' %}
+{% load static %}
+
+{% block contents %}
+
+<div style="margin-bottom:1.5rem;">
+    <div class="section-label">// Model Selection & Comparison</div>
+    <h1 class="page-title">Model <span>Training</span></h1>
+    <p style="color:var(--muted);font-size:0.88rem;margin-top:0.3rem;">Comparing 4 models and selecting the most accurate algorithm on the wind power dataset.</p>
+</div>
+
+{% if error %}
+<!-- Error state -->
+<div class="page-card" style="border-color:rgba(255,107,107,0.35);">
+    <div style="display:flex;align-items:center;gap:0.8rem;margin-bottom:0.8rem;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#ff6b6b" stroke-width="1.5"/><line x1="12" y1="8" x2="12" y2="13" stroke="#ff6b6b" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="16" r="1" fill="#ff6b6b"/></svg>
+        <span style="font-family:var(--font-head);font-size:1rem;font-weight:600;color:#ff8080;">Training Error</span>
+    </div>
+    <p style="color:#ff9090;font-size:0.9rem;margin:0;">{{ error }}</p>
+    <div style="margin-top:1.2rem;">
+        <a href="{% url 'train' %}" class="btn-wind btn-outline">↺ Retry Training</a>
+    </div>
+</div>
+
+{% else %}
+
+<!-- Metrics Grid -->
+<div class="metrics-grid">
+
+    <div class="metric-card">
+        <div class="metric-icon">
+            <svg viewBox="0 0 28 28" fill="none"><polyline points="4,22 9,14 14,18 20,8 24,12" stroke="#00c8d4" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="metric-label">Mean Absolute Error</div>
+        <div class="metric-abbr">MAE</div>
+        <div class="metric-value">{{ mae }} <span class="metric-unit">kW</span></div>
+        <div class="metric-desc">Average absolute deviation between predicted and actual power values.</div>
+    </div>
+
+    <div class="metric-card metric-card--gold">
+        <div class="metric-icon" style="background:rgba(240,192,64,0.1);border-color:rgba(240,192,64,0.25);">
+            <svg viewBox="0 0 28 28" fill="none"><rect x="3" y="3" width="22" height="22" rx="2.5" stroke="#f0c040" stroke-width="1.5"/><line x1="8" y1="19" x2="20" y2="9" stroke="#f0c040" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="19" r="1.8" fill="#f0c040"/><circle cx="20" cy="9" r="1.8" fill="#f0c040"/></svg>
+        </div>
+        <div class="metric-label" style="color:var(--gold-dim);">Mean Squared Error</div>
+        <div class="metric-abbr" style="color:var(--gold);">MSE</div>
+        <div class="metric-value" style="color:var(--gold);">{{ mse }} <span class="metric-unit">kW²</span></div>
+        <div class="metric-desc">Squared average error — penalises large deviations more heavily than MAE.</div>
+    </div>
+
+    <div class="metric-card">
+        <div class="metric-icon">
+            <svg viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="10" stroke="#00c8d4" stroke-width="1.5"/><path d="M14 8 L14 14 L19 17" stroke="#00c8d4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="metric-label">Root Mean Squared Error</div>
+        <div class="metric-abbr">RMSE</div>
+        <div class="metric-value">{{ rmse }} <span class="metric-unit">kW</span></div>
+        <div class="metric-desc">Square root of MSE — expressed in the same unit as the target variable.</div>
+    </div>
+
+    <div class="metric-card metric-card--highlight">
+        <div class="metric-icon" style="background:rgba(0,200,212,0.15);border-color:rgba(0,200,212,0.4);">
+            <svg viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="10" stroke="#00c8d4" stroke-width="1.5"/><circle cx="14" cy="14" r="5" stroke="#00c8d4" stroke-width="1.2"/><circle cx="14" cy="14" r="2" fill="#00c8d4"/></svg>
+        </div>
+        <div class="metric-label">R² Score</div>
+        <div class="metric-abbr">Coefficient of Determination</div>
+        <div class="metric-value r2-value">{{ r2 }}</div>
+        <div class="metric-desc">Proportion of variance explained by the model. Closer to 1.0 is better.</div>
+        <!-- R2 bar -->
+        <div class="r2-bar-wrap">
+            <div class="r2-bar-track">
+                <div class="r2-bar-fill" id="r2Bar"></div>
+            </div>
+            <span class="r2-bar-label" id="r2Label"></span>
+        </div>
+    </div>
+
+</div>
+
+<!-- Training summary strip -->
+<div class="train-summary">
+    <div class="ts-item">
+        <span class="ts-key">Best Algorithm</span>
+        <span class="ts-val text-teal">{{ best_model_name }}</span>
+    </div>
+    <div class="ts-sep"></div>
+    <div class="ts-item">
+        <span class="ts-key">Train Split</span>
+        <span class="ts-val">80% (40,000 samples)</span>
+    </div>
+    <div class="ts-sep"></div>
+    <div class="ts-item">
+        <span class="ts-key">Test Split</span>
+        <span class="ts-val">20% (10,000 samples)</span>
+    </div>
+    <div class="ts-sep"></div>
+    <div class="ts-item">
+        <span class="ts-key">Scaler</span>
+        <span class="ts-val">Standard Scaler</span>
+    </div>
+    <div class="ts-sep"></div>
+    <div class="ts-item">
+        <span class="ts-key">Target</span>
+        <span class="ts-val text-gold">Active Wind Power (kW)</span>
+    </div>
+</div>
+
+<!-- Model Comparison Table -->
+{% if comparison_results %}
+<div class="page-card" style="margin-top:1.5rem;">
+    <div class="section-label">// Benchmarking</div>
+    <h2 class="page-title" style="font-size:1.2rem;margin-bottom:0.4rem;">Model <span>Comparison</span></h2>
+    <p style="color:var(--muted);font-size:0.84rem;margin-bottom:1.2rem;">Comparing Linear Regression, Lasso, Support Vector Regressor (SVR), and KNN models for the highest R² accuracy.</p>
+    <div class="divider"></div>
+    <div style="overflow-x:auto;">
+        <table style="width:100%; text-align:left; border-collapse: collapse; margin-top:1rem; font-size:0.9rem;">
+            <thead>
+                <tr style="border-bottom: 2px solid var(--teal-dim); color: var(--gold);">
+                    <th style="padding: 10px;">Model Name</th>
+                    <th style="padding: 10px;">Accuracy (R²)</th>
+                    <th style="padding: 10px;">MAE (kW)</th>
+                    <th style="padding: 10px;">RMSE (kW)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for res in comparison_results %}
+                <tr style="border-bottom: 1px solid var(--border); color: var(--white);">
+                    <td style="padding: 10px;">
+                        {{ res.model_name }}
+                        {% if res.model_name == best_model_name %}
+                        <span style="background:var(--teal-dim); color:#fff; padding:3px 6px; border-radius:3px; font-size:0.65rem; margin-left:8px; font-weight:700; letter-spacing:0.05em; text-transform:uppercase;">Selected</span>
+                        {% endif %}
+                    </td>
+                    <td style="padding: 10px; font-family:var(--font-mono);">{{ res.accuracy_r2 }}</td>
+                    <td style="padding: 10px; font-family:var(--font-mono);">{{ res.mae }}</td>
+                    <td style="padding: 10px; font-family:var(--font-mono);">{{ res.rmse }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<!-- Correlation Matrix -->
+{% if correlation_plot %}
+<div class="page-card" style="margin-top:1.5rem;">
+    <div class="section-label">// Pearson Correlation</div>
+    <h2 class="page-title" style="font-size:1.2rem;margin-bottom:0.4rem;">Feature <span>Correlation Matrix</span></h2>
+    <p style="color:var(--muted);font-size:0.84rem;margin-bottom:1.2rem;">Heatmap showing pairwise correlation between all sensor features and the target power output.</p>
+    <div class="divider"></div>
+    <div style="text-align:center;margin-top:1rem;">
+        <img src="data:image/png;base64,{{ correlation_plot }}"
+             alt="Feature Correlation Matrix"
+             style="max-width:100%;border-radius:4px;border:1px solid var(--border);">
+    </div>
+</div>
+{% endif %}
+
+<!-- CTA -->
+<div style="text-align:center;margin-top:1.8rem;display:flex;justify-content:center;gap:1rem;flex-wrap:wrap;">
+    <a href="{% url 'predict' %}" class="btn-wind btn-teal">
+        Make Predictions →
+    </a>
+    <a href="{% url 'train' %}" class="btn-wind btn-outline">
+        ↺ Re-train Model
+    </a>
+</div>
+
+{% endif %}
+
+<style>
+/* Metrics grid */
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.2rem;
+}
+
+.metric-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 1.4rem 1.3rem;
+    transition: border-color 0.2s, transform 0.2s;
+    position: relative;
+}
+.metric-card:hover { border-color: var(--teal-dim); transform: translateY(-2px); }
+.metric-card--gold { border-color: rgba(240,192,64,0.2); }
+.metric-card--gold:hover { border-color: var(--gold-dim); }
+.metric-card--highlight { border-color: rgba(0,200,212,0.35); }
+
+.metric-icon {
+    width: 38px; height: 38px;
+    background: rgba(0,200,212,0.08);
+    border: 1px solid rgba(0,200,212,0.22);
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 0.9rem;
+}
+.metric-icon svg { width: 20px; height: 20px; }
+
+.metric-label {
+    font-family: var(--font-mono); font-size: 0.64rem;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 2px;
+}
+.metric-abbr {
+    font-family: var(--font-head); font-size: 0.78rem;
+    color: var(--teal-dim); margin-bottom: 0.6rem;
+    letter-spacing: 0.06em;
+}
+.metric-value {
+    font-family: var(--font-head); font-size: 1.9rem;
+    font-weight: 700; color: var(--teal); line-height: 1;
+    margin-bottom: 0.6rem;
+}
+.r2-value { font-size: 2.2rem; }
+.metric-unit { font-size: 0.9rem; font-weight: 400; opacity: 0.7; }
+.metric-desc { font-size: 0.78rem; color: var(--muted); line-height: 1.55; }
+
+/* R2 bar */
+.r2-bar-wrap { margin-top: 0.9rem; display: flex; align-items: center; gap: 0.6rem; }
+.r2-bar-track {
+    flex: 1; height: 4px;
+    background: rgba(0,200,212,0.1);
+    border-radius: 2px; overflow: hidden;
+}
+.r2-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--teal-dim), var(--teal));
+    border-radius: 2px;
+    transition: width 1s ease;
+    width: 0%;
+}
+.r2-bar-label {
+    font-family: var(--font-mono); font-size: 0.65rem;
+    color: var(--teal); white-space: nowrap;
+}
+
+/* Training summary */
+.train-summary {
+    display: flex; align-items: center; flex-wrap: wrap;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.2rem 0;
+    margin-bottom: 0;
+}
+.ts-item { flex: 1; min-width: 120px; text-align: center; padding: 0.8rem 1rem; display: flex; flex-direction: column; gap: 3px; }
+.ts-key { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.ts-val { font-family: var(--font-head); font-size: 0.9rem; font-weight: 600; color: var(--white); }
+.ts-sep { width: 1px; height: 36px; background: var(--border); flex-shrink: 0; }
+.text-teal { color: var(--teal) !important; }
+.text-gold { color: var(--gold) !important; }
+
+@media (max-width: 700px) {
+    .train-summary { flex-direction: column; }
+    .ts-sep { width: 80%; height: 1px; }
+    .metrics-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 440px) { .metrics-grid { grid-template-columns: 1fr; } }
+</style>
+
+<script>
+// Animate R2 bar on load
+window.addEventListener('DOMContentLoaded', () => {
+    const r2Raw = "{{ r2 }}";
+    const r2Val = parseFloat(r2Raw);
+    if (!isNaN(r2Val)) {
+        const pct = Math.min(Math.max(r2Val * 100, 0), 100);
+        setTimeout(() => {
+            const bar = document.getElementById('r2Bar');
+            const lbl = document.getElementById('r2Label');
+            if (bar) bar.style.width = pct.toFixed(1) + '%';
+            if (lbl) lbl.textContent = pct.toFixed(1) + '%';
+        }, 300);
+    }
+});
+</script>
+
+{% endblock %}
